@@ -1,0 +1,27 @@
+server:
+  port: 8083 # Dedicated port for the payment-ingestor service to avoid collisions in multi-service environments.
+
+spring:
+  application:
+    name: payment-ingestor
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/ # Mongo host/port for local development and docker-compose defaults.
+      database: kafka-check # Logical database that stores accounts, payment requests, and idempotency keys.
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092 # Kafka broker endpoint used by producer and admin client.
+      acks: all # Wait for all in-sync replicas to acknowledge writes for strongest durability.
+      properties:
+        enable.idempotence: true # Prevents duplicate Kafka records during retries from producer failures.
+        compression.type: snappy # Compresses payloads to reduce network bandwidth and improve throughput.
+        linger.ms: 5 # Small batching delay to improve throughput while keeping low latency.
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      show-details: always
